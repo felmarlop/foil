@@ -463,7 +463,7 @@ def foil(ejemplosP, ejemplosN, bc, predObjetivo):
                 #Voy creando una lista de todos los positivos cubiertos para
                 #despues borrarla de EP como dice el algoritmo.
             for i in positivos:
-                for j in range(len(ejemplosP[0])):
+                for j in range(len(predObjetivo.getVariables())):
                     ej.append(i[j])
                 if(ej not in cubiertosFin):
                     cubiertosFin.append(ej)
