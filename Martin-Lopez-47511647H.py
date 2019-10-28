@@ -1,3 +1,4 @@
+# coding=utf-8
 import math, itertools, pprint
 from copy import deepcopy
 
