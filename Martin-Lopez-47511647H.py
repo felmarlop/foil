@@ -1,8 +1,15 @@
 # coding=utf-8
 import itertools
 import math
-import sys
-import pprint
+import logging
+
+handler = logging.StreamHandler()
+handler.setLevel(logging.DEBUG)
+handler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
+
+LOGGER = logging.getLogger('foil')
+LOGGER.setLevel(logging.DEBUG)
+LOGGER.addHandler(handler)
 
 """
     Nombre:FÉLIX MARTÍN LÓPEZ dni:47511647H
@@ -150,7 +157,7 @@ def getGanancia_informacion(t, p, n, ppr, npr):
             res = round(t * (math.log(ppr / float(ppr + npr), 2) -
                              math.log(p / float(p + n), 2)), 3)
         except Exception:
-            print("Oops! ocurrió un error calculando la ganacia.")
+            LOGGER.error("Oops! ocurrió un error calculando la ganacia.")
             res = 0
     return res
 
@@ -463,14 +470,14 @@ def mejor(reg, pos, ejP, ejN, constantes_Problema, bc):
         Pintamos la regla y borramos el ultimo literal añadido para seguir
         probando con los siguientes. Devolvemos el literal de mayor ganancia.
         """
-        print("%s ----> Ganancia: %s" % (reg.__repr__(),
-                                         gananciaAct.__repr__()))
+        LOGGER.info("%s ----> Ganancia: %s" % (reg.__repr__(),
+                                               gananciaAct.__repr__()))
         reg.getExtensiones().remove(literal)
         if gananciaAct > ganancia:
             ganancia = gananciaAct
             res = literal
     if res:
-        print("Literal escogido: %s\n" % res)
+        LOGGER.info("Literal escogido: %s\n" % res)
     return res
 
 
@@ -496,7 +503,7 @@ def foil(ejemplosP, ejemplosN, bc, predObjetivo):
     literalL = []
     # Debemos comprobar si hay ejemplos positivos.
     if not EP:
-        print("Debe haber al menos un ejemplo positivo.")
+        LOGGER.warn("Debe haber al menos un ejemplo positivo.\n")
     # 3.Mientras en E haya ejemplos positivos.Bucle externo
     while EP:
         # 3.1 Crear una regla R sin cuerpo y con cabeza P(predObejtivo)
@@ -514,9 +521,9 @@ def foil(ejemplosP, ejemplosN, bc, predObjetivo):
             literalL = mejor(reglaIni, ejemplosP, positivos, negativos,
                              constantes_Problema, bc)
             if not literalL:
-                print("\nNo se puede obtener el siguiente mejor literal" +
-                      " para la regla " + reglaIni.__repr__() + " con los" +
-                      " ejemplos ofrecidos")
+                LOGGER.error("No se puede obtener el siguiente mejor literal "
+                             "para la regla %s con los ejemplos ofrecidos.\n"
+                             % reglaIni.__repr__())
                 break
             # 3.2.3 Actualizar R añadiendo el literal L al cuerpo de R
             reglaIni.addExtension(literalL)
@@ -537,16 +544,15 @@ def foil(ejemplosP, ejemplosN, bc, predObjetivo):
                 ej = []
         # 3.3 Incluir R en reglas aprendidas.
         if not literalL:
-            print("Regla aprendida:\n%s" % reglaIni.__repr__())
+            LOGGER.info("Regla aprendida: %s" % reglaIni.__repr__())
             break
         reglas_Aprendidas.append(reglaIni)
-        print("Regla aprendida:\n%s" % reglaIni.__repr__())
+        LOGGER.info("Regla aprendida: %s" % reglaIni.__repr__())
         # Actualizar ejemplos quitando los que esten cubiertos por la regla.
         for m in cubiertosFin:
             if EP.__contains__(m):
                 EP.remove(m)
-    print("Total de reglas aprendidas: ")
-    pprint.pprint(reglas_Aprendidas)
+    LOGGER.info("Total de reglas aprendidas:\n%s" % reglas_Aprendidas)
     return reglas_Aprendidas
 
 
@@ -622,14 +628,14 @@ def mejorNfoil(reg, pos, ejP, ejN, constantes_Problema, bc):
         Pintamos la regla y borramos el ultimo literal añadido para seguir
         probando con los siguientes. Devolvemos el literal de mayor ganancia.
         """
-        print("%s ----> Ganancia: %s" % (reg.__repr__(),
-                                         gananciaAct.__repr__()))
+        LOGGER.info("%s ----> Ganancia: %s" % (reg.__repr__(),
+                                               gananciaAct.__repr__()))
         reg.getExtensiones().remove(literal)
         if gananciaAct > ganancia:
             ganancia = gananciaAct
             res = literal
     if (res != []):
-        print("Literal escogido: %s\n" % res)
+        LOGGER.info("Literal escogido: %s\n" % res)
     resFin = [res, ganancia]
     return resFin
 
@@ -660,7 +666,7 @@ def nFoil(ejemplosP, ejemplosN, bc, predObjetivo):
     literalL = []
     # Tienen que existir ejemplos positivos.
     if not EP:
-        print("Debe haber al menos un ejemplo positivo.")
+        LOGGER.warn("Debe haber al menos un ejemplo positivo.\n")
     """
     Definimos el umbral correspondiente a nfoil necesario para la parada del
     bucle externo.
@@ -686,9 +692,9 @@ def nFoil(ejemplosP, ejemplosN, bc, predObjetivo):
             literalL = mejor[0]
             gananciaAct = mejor[1]
             if not literalL:
-                print("\nError: No se puede obtener el siguiente mejor" +
-                      " literal para la regla " + reglaIni.__repr__() +
-                      " con los ejemplos ofrecidos")
+                LOGGER.error("No se puede obtener el siguiente mejor literal "
+                             "para la regla %s con los ejemplos ofrecidos.\n"
+                             % reglaIni.__repr__())
                 break
             # 3.2.3 Actualizar R añadiendo el literal L al cuerpo de R
             reglaIni.addExtension(literalL)
@@ -709,16 +715,15 @@ def nFoil(ejemplosP, ejemplosN, bc, predObjetivo):
                 ej = []
         # 3.3 Incluir R en reglas aprendidas.
         if not literalL:
-            print("Regla aprendida:\n%s" % reglaIni.__repr__())
+            LOGGER.info("Regla aprendida: %s" % reglaIni.__repr__())
             break
         reglas_Aprendidas.append(reglaIni)
-        print("Regla aprendida:\n %s" % reglaIni.__repr__())
+        LOGGER.info("Regla aprendida: %s" % reglaIni.__repr__())
         # Actualizar ejemplos quitando los que esten cubiertos por la regla.
         for m in cubiertosFin:
             if EP.__contains__(m):
                 EP.remove(m)
-    print("Total de reglas aprendidas: ")
-    pprint.pprint(reglas_Aprendidas)
+    LOGGER.info("Total de reglas aprendidas:\n%s" % reglas_Aprendidas)
     return reglas_Aprendidas
 
 
@@ -730,8 +735,8 @@ tener que utilizar más de un carácter, que sea una letra más un número.
 print("================")
 print("     FOIL")
 print("================")
-print("Problema Ejemplo 2")
-print("===============================================================\n")
+
+print("Problema Ejemplo 2\n=====================")
 pc11 = pred("r1", ["7", "1", "7", "5"])
 pc22 = pred("r1", ["7", "2", "7", "3"])
 pc33 = pred("r1", ["7", "1", "7", "8"])
@@ -740,15 +745,16 @@ bc2 = [pc11, pc22, pc33, pc44]
 p11 = pred("p", ["A", "B"])
 ejemplosPos = [["5", "6"], ["3", "4"], ["8", "9"]]
 ejemplosNeg = [["2", "1"], ["7", "2"]]
-print("Predicado objetivo: %s\n" % p11)
+LOGGER.info("Predicado objetivo: %s\n" % p11)
 foil(ejemplosPos, ejemplosNeg, bc2, p11)
-print("\n===============================================================")
+
+
+print("=======================================")
 print("Resolución: SER HIJA DE mediante FOIL")
-print("===============================================================\n")
-
-"""Creamos la base de conocimiento"""
+print("=======================================")
 
 
+# Creamos la base de conocimiento
 def bc_hija():
     pc1 = pred("progenitor", ["Ana", "Maria"])
     pc2 = pred("progenitor", ["Ana", "Tomas"])
@@ -764,24 +770,20 @@ def bc_hija():
     return [pc1, pc2, pc3, pc4, pc5, pc6, pc7, pc8, pc9, pc10]
 
 
+# Ejemplos positivos y negativos
 p = pred("hija", ["A", "B"])
-print("Predicado objetivo: %s\n" % p)
-
-"""Ejemplos positivos y negativos"""
 ejemplosPhija = [["Maria", "Ana"], ["Eva", "Tomas"]]
 ejemplosNhija = [["Tomas", "Ana"], ["Eva", "Ana"], ["Eva", "Ignacio"]]
-
-"""Ejecución FOIL"""
+LOGGER.info("Predicado objetivo: %s\n" % p)
 foil(ejemplosPhija, ejemplosNhija, bc_hija(), p)
 
 
-print("\n===============================================================")
+print("=======================================")
 print("Resolución: SER ABUELO DE mediante FOIL")
-print("===============================================================\n")
-
-"""Creamos la base de conocimiento"""
+print("=========================================")
 
 
+# Creamos la base de conocimiento
 def bc_abuelo():
     res = []
     aux1 = ["CARLOS", "ANA", "ANDRES", "EDUARDO"]
@@ -835,10 +837,8 @@ def bc_abuelo():
     return res
 
 
+# Ejemplos positivos y negativos
 p2 = pred("abuelo", ["A", "B"])
-print("Predicado objetivo: %s\n" % p2)
-
-"""Ejemplos positivos y negativos"""
 ejemplosPabuelo = [["FELIPE", "GUILLERMO"], ["FELIPE", "HARRY"],
                    ["FELIPE", "PEDRO"], ["FELIPE", "ZARA"],
                    ["FELIPE", "BEATRIZ"], ["FELIPE", "EUGENIA"]]
@@ -846,17 +846,16 @@ ejemplosPabuelo = [["FELIPE", "GUILLERMO"], ["FELIPE", "HARRY"],
 rrado. El siguiente método devuelve una lista de dichos ejemplos"""
 ejemplosNabuelo = mundoCerrado(bc_abuelo(), p2, ejemplosPabuelo)
 ejemplosNabuelo2 = ejemplosNabuelo
-"""Ejecución FOIL"""
+LOGGER.info("Predicado objetivo: %s\n" % p2)
 foil(ejemplosPabuelo, ejemplosNabuelo, bc_abuelo(), p2)
 
-"""Problemas nuevos"""
-print("\n===============================================================")
+
+print("========================================")
 print("Resolución: SER MADRE DE mediante FOIL")
-print("===============================================================\n")
-
-"""Creamos la base de conocimiento"""
+print("========================================")
 
 
+# Creamos la base de conocimiento
 def bc_madre():
     pc1 = pred("progenitor", ["CARMEN", "MARIA"])
     pc2 = pred("progenitor", ["MANOLI", "TOMAS"])
@@ -871,24 +870,21 @@ def bc_madre():
     return [pc1, pc2, pc3, pc4, pc5, pc6, pc7, pc8, pc9, pc10]
 
 
+# Ejemplos positivos y negativos
 p3 = pred("madre", ["A", "B"])
-print("Predicado objetivo: %s\n" % p3)
-
-"""Ejemplos positivos y negativos"""
 ejemplosPmadre = [["CARMEN", "MARIA"], ["MANOLI", "TOMAS"]]
 ejemplosNmadre = mundoCerrado(bc_madre(), p3, ejemplosPmadre)
 ejemplosNmadre2 = ejemplosNmadre
-
-"""Ejecución FOIL"""
+LOGGER.info("Predicado objetivo: %s\n" % p3)
 foil(ejemplosPmadre, ejemplosNmadre, bc_madre(), p3)
 
-print("\n===============================================================")
+
+print("========================================")
 print("Resolución: SER NIETO DE mediante FOIL")
-print("===============================================================\n")
-
-"""Base de conocimiento"""
+print("========================================")
 
 
+# Base de conocimiento
 def bc_nieto():
     res = []
     aux1 = ["CARLOS", "ANA", "ANDRES", "EDUARDO"]
@@ -972,55 +968,54 @@ def bc_nieto():
     return res
 
 
+# Ejemplos positivos y negativos
 p4 = pred("nieto", ["A", "B"])
-print("Predicado objetivo: %s\n" % p4)
-
-"""Ejemplos positivos y negativos"""
 ejemplosPnieto = [["GUILLERMO", "FELIPE"], ["HARRY", "FELIPE"],
                   ["PEDRO", "FELIPE"], ["GUILLERMO", "ISABEL"],
                   ["HARRY", "ISABEL"], ["PEDRO", "ISABEL"]]
 ejemplosNnieto = mundoCerrado(bc_nieto(), p4, ejemplosPnieto)
 ejemplosNnieto2 = ejemplosNnieto
-"""Ejecución FOIL"""
+LOGGER.info("Predicado objetivo: %s\n" % p4)
 foil(ejemplosPnieto, ejemplosNnieto, bc_nieto(), p4)
+
 print("================")
 print("     NFOIL")
 print("================")
-"""Los predicados y las bases de conocimiento son las mismas que en FOIL"""
-print("\n===============================================================")
+
+# Los predicados y las bases de conocimiento son las mismas que en FOIL
+print("========================================")
 print("Resolución: SER HIJA DE mediante NFOIL")
-print("===============================================================\n")
-print("Predicado objetivo: %s\n" % p)
-"""Ejemplos positivos y negativos"""
+print("========================================")
+# Ejemplos positivos y negativos
 ejemplosPhija = [["Maria", "Ana"], ["Eva", "Tomas"]]
 ejemplosNhija = [["Tomas", "Ana"], ["Eva", "Ana"], ["Eva", "Ignacio"]]
+LOGGER.info("Predicado objetivo: %s\n" % p)
 nFoil(ejemplosPhija, ejemplosNhija, bc_hija(), p)
 
-print("\n===============================================================")
+print("==========================================")
 print("Resolución: SER ABUELO DE mediante NFOIL")
-print("===============================================================\n")
-print("Predicado objetivo: %s\n" % p2)
-"""Ejemplos positivos. Negativos creados en FOIL"""
+print("==========================================")
+# Ejemplos positivos. Negativos creados en FOIL
 ejemplosPabuelo = [["FELIPE", "GUILLERMO"], ["FELIPE", "HARRY"],
                    ["FELIPE", "PEDRO"], ["FELIPE", "ZARA"],
                    ["FELIPE", "BEATRIZ"], ["FELIPE", "EUGENIA"]]
+LOGGER.info("Predicado objetivo: %s\n" % p2)
 nFoil(ejemplosPabuelo, ejemplosNabuelo2, bc_abuelo(), p2)
 
-"""Problemas nuevos inventados"""
-print("\n===============================================================")
+print("=========================================")
 print("Resolución: SER MADRE DE mediante NFOIL")
-print("===============================================================\n")
-print("Predicado objetivo: %s\n" % p3)
-"""Ejemplos positivos. Negativos creados en FOIL"""
+print("=========================================")
+# Ejemplos positivos. Negativos creados en FOIL
 ejemplosPmadre = [["CARMEN", "MARIA"], ["MANOLI", "TOMAS"]]
+LOGGER.info("Predicado objetivo: %s\n" % p3)
 nFoil(ejemplosPmadre, ejemplosNmadre2, bc_madre(), p3)
 
 print("\n===============================================================")
 print("Resolución: SER NIETO DE mediante NFOIL")
 print("===============================================================\n")
-print("Predicado objetivo: %s\n" % p4)
-"""Ejemplos positivos. Negativos creados en FOIL"""
+# Ejemplos positivos. Negativos creados en FOIL
 ejemplosPnieto = [["GUILLERMO", "FELIPE"], ["HARRY", "FELIPE"],
                   ["PEDRO", "FELIPE"], ["GUILLERMO", "ISABEL"],
                   ["HARRY", "ISABEL"], ["PEDRO", "ISABEL"]]
+LOGGER.info("Predicado objetivo: %s\n" % p4)
 nFoil(ejemplosPnieto, ejemplosNnieto2, bc_nieto(), p4)
