@@ -2,7 +2,7 @@ foil
 ====
 
 Algoritmo Foil y nFoil. Aprendizaje de reglas a partir de una base de conocimiento.
-Version 1.0 14/12/13
+Version 1.1 1/11/2019
 
 Para probar los ejemplos propuestos ejecute:
 
